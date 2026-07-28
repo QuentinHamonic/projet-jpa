@@ -29,7 +29,7 @@ classDiagram
         -String idImdb
         -String titre
         -Integer anneeSortie
-        -Double note
+        -BigDecimal note
         -String resume
         -String url
     }
@@ -38,7 +38,7 @@ classDiagram
         -String idImdb
         -String identite
         -LocalDate dateNaissance
-        -Double taille
+        -BigDecimal taille
         -String url
     }
 
