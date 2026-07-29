@@ -12,11 +12,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class LieuTournage {
+public class FilmingLocation {
 
-    private String ville;
+    private String city;
 
-    private String etatDept;
+    private String stateDepartment;
 
-    private String pays;
+    private String country;
 }

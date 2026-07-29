@@ -1,5 +1,6 @@
 package fr.diginamic.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,11 +11,17 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PersonneDto {
+public class PersonDto {
 
-    private String id;
-    private String identite;
-    private NaissanceDto naissance;
+    @JsonProperty("id")
+    private String imdbId;
+
+    @JsonProperty("identite")
+    private String name;
+
+    @JsonProperty("naissance")
+    private BirthDto birth;
+
     private String url;
     private String height;
 }

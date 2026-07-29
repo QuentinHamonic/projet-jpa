@@ -28,30 +28,30 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Personne {
+public class Person {
 
     @Id
     @Column(name = "id_imdb", length = 10, nullable = false)
     @EqualsAndHashCode.Include
-    private String idImdb;
+    private String imdbId;
 
     @Column(name = "identite", length = 100, nullable = false)
-    private String identite;
+    private String name;
 
     @Column(name = "date_naissance")
-    private LocalDate dateNaissance;
+    private LocalDate birthDate;
 
     @Column(name = "taille", precision = 3, scale = 2)
-    private BigDecimal taille;
+    private BigDecimal height;
 
     @Column(name = "url", length = 50)
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lieu_naissance_id")
-    private LieuNaissance lieuNaissance;
+    private BirthPlace birthPlace;
 
-    @OneToMany(mappedBy = "personne")
+    @OneToMany(mappedBy = "person")
     @Setter(AccessLevel.NONE)
     private List<Role> roles = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public class Personne {
     public void addRole(Role role) {
         if (role != null && !roles.contains(role)) {
             roles.add(role);
-            role.setPersonne(this);
+            role.setPerson(this);
         }
     }
 
@@ -74,7 +74,7 @@ public class Personne {
      */
     public void removeRole(Role role) {
         if (roles.remove(role)) {
-            role.setPersonne(null);
+            role.setPerson(null);
         }
     }
 }

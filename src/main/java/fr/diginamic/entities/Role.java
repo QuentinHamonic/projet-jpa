@@ -36,11 +36,11 @@ public class Role {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "personne_id", nullable = false)
-    private Personne personne;
+    private Person person;
 
     @Column(name = "personnage", length = 100)
-    private String personnage;
+    private String characterName;
 
     @Column(name = "principal", nullable = false)
-    private boolean principal;
+    private boolean mainCast;
 }

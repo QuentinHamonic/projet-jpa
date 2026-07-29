@@ -13,22 +13,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Langue unique par son nom.
+ * Pays de production unique par son nom.
  */
 @Entity
-@Table(name = "langue", uniqueConstraints = @UniqueConstraint(name = "uk_langue_nom", columnNames = "nom"))
+@Table(name = "pays", uniqueConstraints = @UniqueConstraint(name = "uk_pays_nom", columnNames = "nom"))
 @Getter
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Langue {
+public class Country {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "nom", length = 50, nullable = false)
+    @Column(name = "nom", length = 100, nullable = false)
     @EqualsAndHashCode.Include
-    private String nom;
+    private String name;
 }

@@ -1,5 +1,6 @@
 package fr.diginamic.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,5 +14,7 @@ import lombok.Setter;
 public class RoleDto {
 
     private String characterName;
-    private PersonneDto acteur;
+
+    @JsonProperty("acteur")
+    private PersonDto actor;
 }

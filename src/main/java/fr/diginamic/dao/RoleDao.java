@@ -18,18 +18,18 @@ public class RoleDao extends GenericDao<Role, Long> {
      * Recherche le rôle d'une personne dans un film.
      *
      * @param filmId identifiant IMDb du film
-     * @param personneId identifiant IMDb de la personne
+     * @param personId identifiant IMDb de la personne
      * @return rôle éventuellement trouvé
      */
-    public Optional<Role> findByFilmAndPersonne(String filmId, String personneId) {
+    public Optional<Role> findByFilmAndPerson(String filmId, String personId) {
         return entityManager.createQuery("""
                         SELECT r
                         FROM Role r
-                        WHERE r.film.idImdb = :filmId
-                          AND r.personne.idImdb = :personneId
+                        WHERE r.film.imdbId = :filmId
+                          AND r.person.imdbId = :personId
                         """, Role.class)
                 .setParameter("filmId", filmId)
-                .setParameter("personneId", personneId)
+                .setParameter("personId", personId)
                 .setMaxResults(1)
                 .getResultStream()
                 .findFirst();

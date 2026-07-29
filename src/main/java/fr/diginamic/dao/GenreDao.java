@@ -18,12 +18,12 @@ public class GenreDao extends GenericDao<Genre, Long> {
     /**
      * Recherche un genre par son nom.
      *
-     * @param nom nom recherché
+     * @param name nom recherché
      * @return genre éventuellement trouvé
      */
-    public Optional<Genre> findByNom(String nom) {
-        TypedQuery<Genre> q = entityManager.createQuery("Select g From Genre g where g.nom = :nom", Genre.class);
-        q.setParameter("nom", nom);
+    public Optional<Genre> findByName(String name) {
+        TypedQuery<Genre> q = entityManager.createQuery("SELECT g FROM Genre g WHERE g.name = :name", Genre.class);
+        q.setParameter("name", name);
         q.setMaxResults(1);
         return q.getResultStream().findFirst();
     }

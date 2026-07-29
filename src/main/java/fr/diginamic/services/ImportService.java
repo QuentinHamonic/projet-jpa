@@ -6,25 +6,25 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import fr.diginamic.dao.BirthPlaceDao;
+import fr.diginamic.dao.CountryDao;
 import fr.diginamic.dao.FilmDao;
 import fr.diginamic.dao.GenreDao;
-import fr.diginamic.dao.LangueDao;
-import fr.diginamic.dao.LieuNaissanceDao;
-import fr.diginamic.dao.PaysDao;
-import fr.diginamic.dao.PersonneDao;
+import fr.diginamic.dao.LanguageDao;
+import fr.diginamic.dao.PersonDao;
 import fr.diginamic.dao.RoleDao;
+import fr.diginamic.dto.CountryDto;
 import fr.diginamic.dto.FilmDto;
-import fr.diginamic.dto.LieuTournageDto;
-import fr.diginamic.dto.PaysDto;
-import fr.diginamic.dto.PersonneDto;
+import fr.diginamic.dto.FilmingLocationDto;
+import fr.diginamic.dto.PersonDto;
 import fr.diginamic.dto.RoleDto;
+import fr.diginamic.entities.BirthPlace;
+import fr.diginamic.entities.Country;
 import fr.diginamic.entities.Film;
+import fr.diginamic.entities.FilmingLocation;
 import fr.diginamic.entities.Genre;
-import fr.diginamic.entities.Langue;
-import fr.diginamic.entities.LieuNaissance;
-import fr.diginamic.entities.LieuTournage;
-import fr.diginamic.entities.Pays;
-import fr.diginamic.entities.Personne;
+import fr.diginamic.entities.Language;
+import fr.diginamic.entities.Person;
 import fr.diginamic.entities.Role;
 import fr.diginamic.readers.FilmJsonReader;
 import fr.diginamic.utils.ImportValueParser;
@@ -40,19 +40,19 @@ public class ImportService {
     private final FilmJsonReader filmJsonReader;
 
     private final FilmDao filmDao;
-    private final PersonneDao personneDao;
+    private final PersonDao personDao;
     private final RoleDao roleDao;
     private final GenreDao genreDao;
-    private final PaysDao paysDao;
-    private final LangueDao langueDao;
-    private final LieuNaissanceDao lieuNaissanceDao;
+    private final CountryDao countryDao;
+    private final LanguageDao languageDao;
+    private final BirthPlaceDao birthPlaceDao;
 
     private final Map<String, Film> filmsById = new HashMap<>();
-    private final Map<String, Personne> personnesById = new HashMap<>();
+    private final Map<String, Person> peopleById = new HashMap<>();
     private final Map<String, Genre> genresByName = new HashMap<>();
-    private final Map<String, Pays> paysByName = new HashMap<>();
-    private final Map<String, Langue> languesByName = new HashMap<>();
-    private final Map<String, LieuNaissance> lieuxByLabel = new HashMap<>();
+    private final Map<String, Country> countriesByName = new HashMap<>();
+    private final Map<String, Language> languagesByName = new HashMap<>();
+    private final Map<String, BirthPlace> birthPlacesByLabel = new HashMap<>();
     private final Map<RoleKey, Role> rolesByKey = new HashMap<>();
 
     /**
@@ -65,12 +65,12 @@ public class ImportService {
 
         this.filmJsonReader = new FilmJsonReader();
         this.filmDao = new FilmDao(entityManager);
-        this.personneDao = new PersonneDao(entityManager);
+        this.personDao = new PersonDao(entityManager);
         this.roleDao = new RoleDao(entityManager);
         this.genreDao = new GenreDao(entityManager);
-        this.paysDao = new PaysDao(entityManager);
-        this.langueDao = new LangueDao(entityManager);
-        this.lieuNaissanceDao = new LieuNaissanceDao(entityManager);
+        this.countryDao = new CountryDao(entityManager);
+        this.languageDao = new LanguageDao(entityManager);
+        this.birthPlaceDao = new BirthPlaceDao(entityManager);
 
     }
 
@@ -79,32 +79,32 @@ public class ImportService {
      */
     private void preloadCaches() {
         filmsById.clear();
-        filmDao.findAll().forEach(film -> filmsById.put(film.getIdImdb(), film));
+        filmDao.findAll().forEach(film -> filmsById.put(film.getImdbId(), film));
 
-        personnesById.clear();
-        personneDao.findAll().forEach(personne -> personnesById.put(personne.getIdImdb(), personne));
+        peopleById.clear();
+        personDao.findAll().forEach(person -> peopleById.put(person.getImdbId(), person));
 
         genresByName.clear();
         genreDao.findAll().forEach(genre ->
-                genresByName.put(ImportValueParser.normalizeKey(genre.getNom()), genre));
+                genresByName.put(ImportValueParser.normalizeKey(genre.getName()), genre));
 
-        paysByName.clear();
-        paysDao.findAll().forEach(pays ->
-                paysByName.put(ImportValueParser.normalizeKey(pays.getNom()), pays));
+        countriesByName.clear();
+        countryDao.findAll().forEach(country ->
+                countriesByName.put(ImportValueParser.normalizeKey(country.getName()), country));
 
-        languesByName.clear();
-        langueDao.findAll().forEach(langue ->
-                languesByName.put(ImportValueParser.normalizeKey(langue.getNom()), langue));
+        languagesByName.clear();
+        languageDao.findAll().forEach(language ->
+                languagesByName.put(ImportValueParser.normalizeKey(language.getName()), language));
 
-        lieuxByLabel.clear();
-        lieuNaissanceDao.findAll().forEach(lieu ->
-                lieuxByLabel.put(ImportValueParser.normalizeKey(lieu.getLibelle()), lieu));
+        birthPlacesByLabel.clear();
+        birthPlaceDao.findAll().forEach(birthPlace ->
+                birthPlacesByLabel.put(ImportValueParser.normalizeKey(birthPlace.getLabel()), birthPlace));
 
         rolesByKey.clear();
         roleDao.findAll().forEach(role -> {
             RoleKey key = new RoleKey(
-                    role.getFilm().getIdImdb(),
-                    role.getPersonne().getIdImdb());
+                    role.getFilm().getImdbId(),
+                    role.getPerson().getImdbId());
 
             rolesByKey.put(key, role);
         });
@@ -113,33 +113,33 @@ public class ImportService {
     /**
      * Recherche un pays par son nom ou le crée s'il est absent.
      *
-     * @param paysDto données brutes du pays
+     * @param countryDto données brutes du pays
      * @return pays trouvé ou créé, ou {@code null}
      */
-    private Pays findOrCreatePays(PaysDto paysDto) {
+    private Country findOrCreateCountry(CountryDto countryDto) {
 
-        if (paysDto == null) {
+        if (countryDto == null) {
             return null;
         }
 
-        String nom = ImportValueParser.cleanText(paysDto.getNom());
+        String name = ImportValueParser.cleanText(countryDto.getName());
 
-        if (nom == null) {
+        if (name == null) {
             return null;
         }
 
-        String key = ImportValueParser.normalizeKey(nom);
-        Pays pays = paysByName.get(key);
+        String key = ImportValueParser.normalizeKey(name);
+        Country country = countriesByName.get(key);
 
-        if (pays == null) {
+        if (country == null) {
 
-            pays = new Pays();
-            pays.setNom(nom);
+            country = new Country();
+            country.setName(name);
 
-            paysDao.persist(pays);
-            paysByName.put(key, pays);
+            countryDao.persist(country);
+            countriesByName.put(key, country);
         }
-        return pays;
+        return country;
 
     }
 
@@ -149,30 +149,30 @@ public class ImportService {
      * @param text nom brut de la langue
      * @return langue trouvée ou créée, ou {@code null}
      */
-    private Langue findOrCreateLangue(String text) {
+    private Language findOrCreateLanguage(String text) {
 
         if (text == null) {
             return null;
         }
 
-        String nom = ImportValueParser.cleanText(text);
+        String name = ImportValueParser.cleanText(text);
 
-        if (nom == null || "None".equalsIgnoreCase(nom)) {
+        if (name == null || "None".equalsIgnoreCase(name)) {
             return null;
         }
 
-        String key = ImportValueParser.normalizeKey(nom);
-        Langue langue = languesByName.get(key);
+        String key = ImportValueParser.normalizeKey(name);
+        Language language = languagesByName.get(key);
 
-        if (langue == null) {
+        if (language == null) {
 
-            langue = new Langue();
-            langue.setNom(nom);
+            language = new Language();
+            language.setName(name);
 
-            langueDao.persist(langue);
-            languesByName.put(key, langue);
+            languageDao.persist(language);
+            languagesByName.put(key, language);
         }
-        return langue;
+        return language;
 
     }
 
@@ -183,18 +183,18 @@ public class ImportService {
      * @return genre trouvé ou créé, ou {@code null}
      */
     private Genre findOrCreateGenre(String text) {
-        String nom = ImportValueParser.cleanText(text);
+        String name = ImportValueParser.cleanText(text);
 
-        if (nom == null) {
+        if (name == null) {
             return null;
         }
 
-        String key = ImportValueParser.normalizeKey(nom);
+        String key = ImportValueParser.normalizeKey(name);
         Genre genre = genresByName.get(key);
 
         if (genre == null) {
             genre = new Genre();
-            genre.setNom(nom);
+            genre.setName(name);
 
             genreDao.persist(genre);
             genresByName.put(key, genre);
@@ -209,99 +209,99 @@ public class ImportService {
      * @param text libellé brut du lieu
      * @return lieu trouvé ou créé, ou {@code null}
      */
-    private LieuNaissance findOrCreateLieuNaissance(String text) {
-        String libelle = ImportValueParser.cleanText(text);
+    private BirthPlace findOrCreateBirthPlace(String text) {
+        String label = ImportValueParser.cleanText(text);
 
-        if (libelle == null) {
+        if (label == null) {
             return null;
         }
 
-        String key = ImportValueParser.normalizeKey(libelle);
-        LieuNaissance lieu = lieuxByLabel.get(key);
+        String key = ImportValueParser.normalizeKey(label);
+        BirthPlace birthPlace = birthPlacesByLabel.get(key);
 
-        if (lieu == null) {
-            lieu = new LieuNaissance();
-            lieu.setLibelle(libelle);
+        if (birthPlace == null) {
+            birthPlace = new BirthPlace();
+            birthPlace.setLabel(label);
 
-            lieuNaissanceDao.persist(lieu);
-            lieuxByLabel.put(key, lieu);
+            birthPlaceDao.persist(birthPlace);
+            birthPlacesByLabel.put(key, birthPlace);
         }
 
-        return lieu;
+        return birthPlace;
     }
 
     /**
      * Recherche une personne par son identifiant IMDb ou la crée si elle est absente.
      *
-     * @param personneDto données brutes de la personne
+     * @param personDto données brutes de la personne
      * @return personne trouvée ou créée, ou {@code null}
      */
-    private Personne findOrCreatePersonne(PersonneDto personneDto) {
-        if (personneDto == null) {
+    private Person findOrCreatePerson(PersonDto personDto) {
+        if (personDto == null) {
             return null;
         }
 
-        String personneId = ImportValueParser.cleanText(personneDto.getId());
+        String personId = ImportValueParser.cleanText(personDto.getImdbId());
 
-        if (personneId == null) {
+        if (personId == null) {
             throw new IllegalArgumentException("Personne sans identifiant IMDb");
         }
 
-        Personne personne = personnesById.get(personneId);
+        Person person = peopleById.get(personId);
 
-        if (personne == null) {
-            String identite = ImportValueParser.cleanText(personneDto.getIdentite());
+        if (person == null) {
+            String name = ImportValueParser.cleanText(personDto.getName());
 
-            if (identite == null) {
-                throw new IllegalArgumentException("Personne sans identité : " + personneId);
+            if (name == null) {
+                throw new IllegalArgumentException("Personne sans identité : " + personId);
             }
 
-            personne = new Personne();
-            personne.setIdImdb(personneId);
-            personne.setIdentite(identite);
-            personne.setUrl(ImportValueParser.cleanText(personneDto.getUrl()));
-            personne.setTaille(ImportValueParser.parseHeight(personneDto.getHeight()));
+            person = new Person();
+            person.setImdbId(personId);
+            person.setName(name);
+            person.setUrl(ImportValueParser.cleanText(personDto.getUrl()));
+            person.setHeight(ImportValueParser.parseHeight(personDto.getHeight()));
 
-            if (personneDto.getNaissance() != null) {
-                personne.setDateNaissance(
-                        ImportValueParser.parseDate(personneDto.getNaissance().getDateNaissance()));
-                personne.setLieuNaissance(
-                        findOrCreateLieuNaissance(personneDto.getNaissance().getLieuNaissance()));
+            if (personDto.getBirth() != null) {
+                person.setBirthDate(
+                        ImportValueParser.parseDate(personDto.getBirth().getBirthDate()));
+                person.setBirthPlace(
+                        findOrCreateBirthPlace(personDto.getBirth().getBirthPlace()));
             }
 
-            personneDao.persist(personne);
-            personnesById.put(personneId, personne);
-        } else if (personne.getTaille() == null) {
-            personne.setTaille(ImportValueParser.parseHeight(personneDto.getHeight()));
+            personDao.persist(person);
+            peopleById.put(personId, person);
+        } else if (person.getHeight() == null) {
+            person.setHeight(ImportValueParser.parseHeight(personDto.getHeight()));
         }
 
-        return personne;
+        return person;
     }
 
     /**
      * Convertit un lieu de tournage brut en valeur embarquée.
      *
-     * @param lieuDto données brutes du lieu
+     * @param locationDto données brutes du lieu
      * @return lieu converti, ou {@code null}
      */
-    private LieuTournage mapLieuTournage(LieuTournageDto lieuDto) {
-        if (lieuDto == null) {
+    private FilmingLocation mapFilmingLocation(FilmingLocationDto locationDto) {
+        if (locationDto == null) {
             return null;
         }
 
-        String ville = ImportValueParser.cleanText(lieuDto.getVille());
-        String etatDept = ImportValueParser.cleanText(lieuDto.getEtatDept());
-        String pays = ImportValueParser.cleanText(lieuDto.getPays());
+        String city = ImportValueParser.cleanText(locationDto.getCity());
+        String stateDepartment = ImportValueParser.cleanText(locationDto.getStateDepartment());
+        String country = ImportValueParser.cleanText(locationDto.getCountry());
 
-        if (ville == null && etatDept == null && pays == null) {
+        if (city == null && stateDepartment == null && country == null) {
             return null;
         }
 
-        LieuTournage lieu = new LieuTournage();
-        lieu.setVille(ville);
-        lieu.setEtatDept(etatDept);
-        lieu.setPays(pays);
-        return lieu;
+        FilmingLocation location = new FilmingLocation();
+        location.setCity(city);
+        location.setStateDepartment(stateDepartment);
+        location.setCountry(country);
+        return location;
     }
 
     /**
@@ -315,8 +315,8 @@ public class ImportService {
             return;
         }
 
-        for (String nom : filmDto.getGenres()) {
-            film.addGenre(findOrCreateGenre(nom));
+        for (String name : filmDto.getGenres()) {
+            film.addGenre(findOrCreateGenre(name));
         }
     }
 
@@ -326,13 +326,13 @@ public class ImportService {
      * @param film entité à compléter
      * @param filmDto données brutes du film
      */
-    private void addRealisateurs(Film film, FilmDto filmDto) {
-        if (filmDto.getRealisateurs() == null) {
+    private void addDirectors(Film film, FilmDto filmDto) {
+        if (filmDto.getDirectors() == null) {
             return;
         }
 
-        for (PersonneDto personneDto : filmDto.getRealisateurs()) {
-            film.addRealisateur(findOrCreatePersonne(personneDto));
+        for (PersonDto personDto : filmDto.getDirectors()) {
+            film.addDirector(findOrCreatePerson(personDto));
         }
     }
 
@@ -342,24 +342,24 @@ public class ImportService {
      * @param filmDto données brutes du film
      * @return identifiants uniques du casting principal
      */
-    private Set<String> extractPrincipalIds(FilmDto filmDto) {
-        Set<String> principalIds = new HashSet<>();
+    private Set<String> extractMainCastIds(FilmDto filmDto) {
+        Set<String> mainCastIds = new HashSet<>();
 
-        if (filmDto.getCastingPrincipal() == null) {
-            return principalIds;
+        if (filmDto.getMainCast() == null) {
+            return mainCastIds;
         }
 
-        for (PersonneDto personneDto : filmDto.getCastingPrincipal()) {
-            if (personneDto != null) {
-                String personneId = ImportValueParser.cleanText(personneDto.getId());
+        for (PersonDto personDto : filmDto.getMainCast()) {
+            if (personDto != null) {
+                String personId = ImportValueParser.cleanText(personDto.getImdbId());
 
-                if (personneId != null) {
-                    principalIds.add(personneId);
+                if (personId != null) {
+                    mainCastIds.add(personId);
                 }
             }
         }
 
-        return principalIds;
+        return mainCastIds;
     }
 
     /**
@@ -373,40 +373,40 @@ public class ImportService {
             return;
         }
 
-        Set<String> principalIds = extractPrincipalIds(filmDto);
+        Set<String> mainCastIds = extractMainCastIds(filmDto);
 
         for (RoleDto roleDto : filmDto.getRoles()) {
             if (roleDto == null) {
                 continue;
             }
 
-            Personne personne = findOrCreatePersonne(roleDto.getActeur());
+            Person person = findOrCreatePerson(roleDto.getActor());
 
-            if (personne == null) {
+            if (person == null) {
                 continue;
             }
 
-            RoleKey key = new RoleKey(film.getIdImdb(), personne.getIdImdb());
+            RoleKey key = new RoleKey(film.getImdbId(), person.getImdbId());
             Role role = rolesByKey.get(key);
-            String personnage = ImportValueParser.cleanText(roleDto.getCharacterName());
-            boolean principal = principalIds.contains(personne.getIdImdb());
+            String characterName = ImportValueParser.cleanText(roleDto.getCharacterName());
+            boolean mainCast = mainCastIds.contains(person.getImdbId());
 
             if (role == null) {
                 role = new Role();
-                role.setPersonnage(personnage);
-                role.setPrincipal(principal);
+                role.setCharacterName(characterName);
+                role.setMainCast(mainCast);
 
                 film.addRole(role);
-                personne.addRole(role);
+                person.addRole(role);
                 roleDao.persist(role);
                 rolesByKey.put(key, role);
             } else {
-                if (role.getPersonnage() == null && personnage != null) {
-                    role.setPersonnage(personnage);
+                if (role.getCharacterName() == null && characterName != null) {
+                    role.setCharacterName(characterName);
                 }
 
-                if (!role.isPrincipal() && principal) {
-                    role.setPrincipal(true);
+                if (!role.isMainCast() && mainCast) {
+                    role.setMainCast(true);
                 }
             }
         }
@@ -418,19 +418,19 @@ public class ImportService {
      * @param filmDto données brutes du film
      */
     private void importFilm(FilmDto filmDto) {
-        String filmId = ImportValueParser.cleanText(filmDto.getId());
+        String filmId = ImportValueParser.cleanText(filmDto.getImdbId());
 
         if (filmId == null) {
             throw new IllegalArgumentException("Film sans identifiant IMDb");
         }
 
         Film film = filmsById.get(filmId);
-        Integer parsedYear = ImportValueParser.parseYear(filmDto.getAnneeSortie());
+        Integer parsedYear = ImportValueParser.parseYear(filmDto.getReleaseYear());
 
         if (film == null) {
-            String titre = ImportValueParser.cleanText(filmDto.getNom());
+            String title = ImportValueParser.cleanText(filmDto.getTitle());
 
-            if (titre == null) {
+            if (title == null) {
                 throw new IllegalArgumentException("Film sans titre : " + filmId);
             }
 
@@ -440,38 +440,38 @@ public class ImportService {
 
             film = new Film();
 
-            film.setIdImdb(filmId);
-            film.setTitre(titre);
-            film.setAnneeSortie(parsedYear);
-            film.setNote(ImportValueParser.parseRating(filmDto.getRating()));
-            film.setResume(ImportValueParser.cleanText(filmDto.getPlot()));
+            film.setImdbId(filmId);
+            film.setTitle(title);
+            film.setReleaseYear(parsedYear);
+            film.setRating(ImportValueParser.parseRating(filmDto.getRating()));
+            film.setPlot(ImportValueParser.cleanText(filmDto.getPlot()));
             film.setUrl(ImportValueParser.cleanText(filmDto.getUrl()));
 
             filmDao.persist(film);
             filmsById.put(filmId, film);
-        } else if (parsedYear != null && (film.getAnneeSortie() == null || parsedYear < film.getAnneeSortie())) {
+        } else if (parsedYear != null && (film.getReleaseYear() == null || parsedYear < film.getReleaseYear())) {
 
-            film.setAnneeSortie(parsedYear);
+            film.setReleaseYear(parsedYear);
         }
 
-        Pays pays = findOrCreatePays(filmDto.getPays());
+        Country country = findOrCreateCountry(filmDto.getCountry());
 
-        if (film.getPays() == null && pays != null) {
-            film.setPays(pays);
+        if (film.getCountry() == null && country != null) {
+            film.setCountry(country);
         }
 
-        Langue langue = findOrCreateLangue(filmDto.getLangue());
+        Language language = findOrCreateLanguage(filmDto.getLanguage());
 
-        if (film.getLangue() == null && langue != null) {
-            film.setLangue(langue);
+        if (film.getLanguage() == null && language != null) {
+            film.setLanguage(language);
         }
 
-        if (film.getLieuTournage() == null) {
-            film.setLieuTournage(mapLieuTournage(filmDto.getLieuTournage()));
+        if (film.getFilmingLocation() == null) {
+            film.setFilmingLocation(mapFilmingLocation(filmDto.getFilmingLocation()));
         }
 
         addGenres(film, filmDto);
-        addRealisateurs(film, filmDto);
+        addDirectors(film, filmDto);
         addRoles(film, filmDto);
 
     }
@@ -500,7 +500,7 @@ public class ImportService {
     /**
      * Clé de dédoublonnage d'un rôle par film et personne.
      */
-    private record RoleKey(String filmId, String personneId) {
+    private record RoleKey(String filmId, String personId) {
     }
 
 }

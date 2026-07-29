@@ -30,5 +30,5 @@ public class Genre {
 
     @Column(name = "nom", length = 50, nullable = false)
     @EqualsAndHashCode.Include
-    private String nom;
+    private String name;
 }

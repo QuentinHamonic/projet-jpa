@@ -40,38 +40,38 @@ public class Film {
     @Id
     @Column(name = "id_imdb", length = 10, nullable = false)
     @EqualsAndHashCode.Include
-    private String idImdb;
+    private String imdbId;
 
     @Column(name = "titre", length = 150, nullable = false)
-    private String titre;
+    private String title;
 
     @Column(name = "annee_sortie", nullable = false)
-    private Integer anneeSortie;
+    private Integer releaseYear;
 
     @Column(name = "note", precision = 3, scale = 1)
-    private BigDecimal note;
+    private BigDecimal rating;
 
     @Column(name = "resume", length = 500)
-    private String resume;
+    private String plot;
 
     @Column(name = "url", length = 100)
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pays_id")
-    private Pays pays;
+    private Country country;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "langue_id")
-    private Langue langue;
+    private Language language;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name = "ville", column = @Column(name = "tournage_ville", length = 150)),
-            @AttributeOverride(name = "etatDept", column = @Column(name = "tournage_etat_dept", length = 100)),
-            @AttributeOverride(name = "pays", column = @Column(name = "tournage_pays", length = 100))
+            @AttributeOverride(name = "city", column = @Column(name = "tournage_ville", length = 150)),
+            @AttributeOverride(name = "stateDepartment", column = @Column(name = "tournage_etat_dept", length = 100)),
+            @AttributeOverride(name = "country", column = @Column(name = "tournage_pays", length = 100))
     })
-    private LieuTournage lieuTournage;
+    private FilmingLocation filmingLocation;
 
     @OneToMany(mappedBy = "film", cascade = CascadeType.ALL, orphanRemoval = true)
     @Setter(AccessLevel.NONE)
@@ -80,7 +80,7 @@ public class Film {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "film_realisateur", joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "id_imdb"), inverseJoinColumns = @JoinColumn(name = "personne_id", referencedColumnName = "id_imdb"))
     @Setter(AccessLevel.NONE)
-    private Set<Personne> realisateurs = new HashSet<>();
+    private Set<Person> directors = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "film_genre", joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "id_imdb"), inverseJoinColumns = @JoinColumn(name = "genre_id", referencedColumnName = "id"))
@@ -113,11 +113,11 @@ public class Film {
     /**
      * Ajoute un réalisateur sans autoriser de doublon.
      *
-     * @param realisateur personne réalisatrice
+     * @param director personne réalisatrice
      */
-    public void addRealisateur(Personne realisateur) {
-        if (realisateur != null) {
-            realisateurs.add(realisateur);
+    public void addDirector(Person director) {
+        if (director != null) {
+            directors.add(director);
         }
     }
 

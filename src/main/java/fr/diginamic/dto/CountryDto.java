@@ -1,5 +1,6 @@
 package fr.diginamic.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,8 +11,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PaysDto {
+public class CountryDto {
 
-    private String nom;
+    @JsonProperty("nom")
+    private String name;
+
     private String url;
 }
