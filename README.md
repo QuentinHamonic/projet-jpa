@@ -15,19 +15,33 @@ Les recherches prévues concernent notamment la filmographie d'un acteur, le cas
 
 ## Source des données
 
-Le sujet propose des fichiers CSV ou un fichier JSON global. Le projet s'appuie sur [`films.json`](src/main/resources/films.json), retenu comme source unique afin de conserver une structure complète et non ambiguë des données. Son import nécessitera la bibliothèque Jackson.
+Le sujet propose des fichiers CSV ou un fichier JSON global. Le projet s'appuie sur [`films.json`](src/main/resources/films.json), retenu comme source unique afin de conserver une structure complète et non ambiguë des données. Son import utilise la bibliothèque Jackson.
 
-Une attention particulière sera portée au nettoyage et à l'unicité des lieux de naissance, pays, langues et genres, ainsi qu'à la conversion des dates de naissance en `LocalDate`.
+L'import nettoie et dédoublonne les lieux de naissance, pays, langues et genres. Il convertit également les dates de naissance exploitables en `LocalDate`.
 
 ## État actuel
 
-Le projet est en phase de conception et d'analyse des données :
+Le projet est fonctionnel :
 
 - squelette Java/Maven initialisé ;
 - fichier JSON intégré aux ressources ;
 - diagramme de classes UML et modèle physique de données préparés ;
 - choix de modélisation et structure de la base documentés ;
-- import JPA et menu de recherche encore à développer.
+- import JSON en streaming avec Jackson et persistance JPA réalisés ;
+- DAO générique, DAO spécialisés et couche de service disponibles ;
+- menu console couvrant les six recherches demandées.
+
+## Exécution
+
+Après avoir configuré la connexion MySQL dans `persistence.xml` :
+
+```shell
+# Importer les données
+mvn exec:java -Dexec.mainClass="fr.diginamic.App"
+
+# Lancer le menu de recherche
+mvn exec:java -Dexec.mainClass="fr.diginamic.SearchApp"
+```
 
 ## Organisation
 
@@ -41,7 +55,7 @@ cinema/
 └── pom.xml              # Configuration Maven
 ```
 
-## Technologies prévues
+## Technologies
 
 - Java
 - Maven
@@ -53,4 +67,3 @@ cinema/
 ## Documentation
 
 Les détails de la modélisation sont disponibles dans [`conception/conception.md`](conception/conception.md). Les analyses complémentaires du fichier JSON et du choix entre CSV et JSON se trouvent dans le dossier [`docs`](docs/).
-
