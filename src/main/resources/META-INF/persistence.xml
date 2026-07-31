@@ -11,18 +11,14 @@
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
 
         <properties>
-            <!-- Connexion MySQL 8.4 locale. -->
+            <!-- Valeurs locales par défaut, surchargeables par les variables d'environnement. -->
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="jakarta.persistence.jdbc.url"
                       value="jdbc:mysql://localhost:3306/cinema?useSSL=false&amp;allowPublicKeyRetrieval=true&amp;serverTimezone=Europe/Paris"/>
             <property name="jakarta.persistence.jdbc.user" value="root"/>
-            <property name="jakarta.persistence.jdbc.password" value="123"/>
 
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-
-            <!-- La structure existe déjà : Hibernate la contrôle sans la modifier. -->
+            <!-- Mode sûr par défaut, remplacé ponctuellement pendant l'initialisation. -->
             <property name="hibernate.hbm2ddl.auto" value="validate"/>
-            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
 
             <!-- Réglages utiles pendant le développement. -->
             <property name="hibernate.show_sql" value="False"/>
