@@ -35,48 +35,53 @@ Le projet est fonctionnel :
 - DAO générique, DAO spécialisés et couche de service disponibles ;
 - menu console couvrant les six recherches demandées.
 
-## Exécution
+## Démarrage avec Docker
 
-La connexion à MySQL est configurable par variables d'environnement :
+Copiez la configuration d'exemple et remplacez ses deux mots de passe fictifs :
 
-- `DB_URL` : URL JDBC ;
-- `DB_USER` : utilisateur MySQL ;
-- `DB_PASSWORD` : mot de passe MySQL ;
-- `HIBERNATE_DDL_AUTO` : `validate` par défaut ou `create` pour recréer les tables.
+```powershell
+Copy-Item .env.example .env
+```
 
-Le fichier [`.env.example`](.env.example) fournit des valeurs fictives. Un fichier
-`.env` local peut en être dérivé, mais ne doit jamais être versionné. Pour une
-exécution directe sous PowerShell, définissez les variables dans le terminal :
+Lancez ensuite l'application :
+
+```shell
+docker compose run --build --rm app
+```
+
+Au premier démarrage, Compose lance MySQL, Hibernate crée le schéma et le fichier
+JSON est importé automatiquement. Les démarrages suivants conservent les données
+dans le volume Docker et valident le schéma avant d'ouvrir le menu.
+
+```shell
+# Arrêter MySQL sans supprimer les données
+docker compose down
+
+# Réinitialiser complètement la base
+docker compose down --volumes
+```
+
+## Exécution locale
+
+Sans Docker, la connexion peut être fournie par `DB_URL`, `DB_USER` et
+`DB_PASSWORD`. Sous PowerShell :
 
 ```powershell
 $env:DB_URL = "jdbc:mysql://localhost:3306/cinema?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Paris"
 $env:DB_USER = "root"
 $env:DB_PASSWORD = "votre-mot-de-passe-local"
-$env:HIBERNATE_DDL_AUTO = "validate"
-```
-
-L'application peut ensuite être lancée avec Maven :
-
-```shell
-# Importer les données
 mvn exec:java -Dexec.mainClass="fr.diginamic.App"
-
-# Lancer le menu de recherche
-mvn exec:java -Dexec.mainClass="fr.diginamic.SearchApp"
 ```
 
 La commande `mvn clean package` produit également un JAR autonome :
 
 ```shell
-# Lancer le menu de recherche
 java -jar target/cinema-1.0-SNAPSHOT-all.jar
-
-# Lancer l'import
-java -cp target/cinema-1.0-SNAPSHOT-all.jar fr.diginamic.App
 ```
 
-Le mode `create` supprime et recrée les tables au démarrage. Il doit uniquement
-être activé volontairement pour initialiser une base vide avant l'import.
+`fr.diginamic.App` initialise la base si nécessaire puis ouvre le menu de
+recherche. `fr.diginamic.SearchApp` reste disponible pour lancer uniquement ce
+menu sur une base déjà initialisée.
 
 ## Organisation
 
