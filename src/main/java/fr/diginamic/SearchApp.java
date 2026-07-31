@@ -36,15 +36,26 @@ public final class SearchApp {
     public static void main(String[] args) {
         EntityManager entityManager = JpaUtil.createEntityManager();
 
-        try (Scanner scanner = new Scanner(System.in)) {
-            SearchService searchService = new SearchService(entityManager);
-            runMenu(scanner, searchService);
+        try {
+            run(entityManager);
         } finally {
             if (entityManager.isOpen()) {
                 entityManager.close();
             }
 
             JpaUtil.close();
+        }
+    }
+
+    /**
+     * Exécute le menu avec un gestionnaire d'entités déjà configuré.
+     *
+     * @param entityManager gestionnaire utilisé pour les recherches
+     */
+    public static void run(EntityManager entityManager) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            SearchService searchService = new SearchService(entityManager);
+            runMenu(scanner, searchService);
         }
     }
 

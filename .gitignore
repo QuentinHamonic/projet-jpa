@@ -1,1 +1,7 @@
+target/
 docs/
+
+# Configuration locale : ne jamais versionner les secrets.
+.env
+.env.*
+!.env.example

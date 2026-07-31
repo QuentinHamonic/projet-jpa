@@ -19,6 +19,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ public class Film {
     @Column(name = "titre", length = 150, nullable = false)
     private String title;
 
+    @JdbcTypeCode(SqlTypes.SMALLINT)
     @Column(name = "annee_sortie", nullable = false)
     private Integer releaseYear;
 

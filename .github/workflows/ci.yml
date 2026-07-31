@@ -38,6 +38,6 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: cinema-${{ github.sha }}
-          path: target/*.jar
+          path: target/*-all.jar
           if-no-files-found: error
           retention-days: 14

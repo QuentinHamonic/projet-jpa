@@ -1,36 +1,78 @@
 package fr.diginamic;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import fr.diginamic.config.JpaUtil;
 import fr.diginamic.services.ImportService;
 import jakarta.persistence.EntityManager;
 
 /**
- * Point d'entrée de l'import des films.
+ * Point d'entrée de l'application cinéma.
  */
-public class App {
+public final class App {
+
+    private App() {
+    }
 
     /**
-     * Lance l'import puis ferme les ressources JPA.
+     * Initialise les données au premier lancement puis démarre les recherches.
      *
      * @param args arguments de la ligne de commande
      * @throws IOException si la lecture du fichier JSON échoue
+     * @throws SQLException si l'état de la base ne peut pas être vérifié
      */
-    public static void main(String[] args) throws IOException {
-        EntityManager entityManager = JpaUtil.createEntityManager();
+    public static void main(String[] args) throws IOException, SQLException {
+        configureFrameworkLogging();
+        initializeDatabaseIfNecessary();
+        openSearchMenu();
+    }
+
+    private static void configureFrameworkLogging() {
+        Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
+    }
+
+    private static void initializeDatabaseIfNecessary() throws IOException, SQLException {
+        boolean schemaExists = JpaUtil.schemaExists();
+
+        if (schemaExists && JpaUtil.containsFilms()) {
+            return;
+        }
+
+        String schemaMode = schemaExists ? "create" : "create-only";
+        System.out.println("Initialisation de la base de données…");
+
+        EntityManager entityManager = JpaUtil.createEntityManager(schemaMode);
 
         try {
-            ImportService importService = new ImportService(entityManager);
-            importService.importFilms();
+            new ImportService(entityManager).importFilms();
+            long filmCount = entityManager
+                    .createQuery("SELECT COUNT(f) FROM Film f", Long.class)
+                    .getSingleResult();
 
-            System.out.println("Import terminé.");
+            System.out.printf("%d films importés. Base prête.%n", filmCount);
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
-            }
-
+            closeEntityManager(entityManager);
             JpaUtil.close();
+        }
+    }
+
+    private static void openSearchMenu() {
+        EntityManager entityManager = JpaUtil.createEntityManager("validate");
+
+        try {
+            SearchApp.run(entityManager);
+        } finally {
+            closeEntityManager(entityManager);
+            JpaUtil.close();
+        }
+    }
+
+    private static void closeEntityManager(EntityManager entityManager) {
+        if (entityManager.isOpen()) {
+            entityManager.close();
         }
     }
 }
