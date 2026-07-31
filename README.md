@@ -43,6 +43,9 @@ Copiez la configuration d'exemple et remplacez ses deux mots de passe fictifs :
 Copy-Item .env.example .env
 ```
 
+Les variables Docker sont préfixées par `CINEMA_` afin de ne pas entrer en
+conflit avec les identifiants `DB_USER` et `DB_PASSWORD` d'une exécution locale.
+
 Lancez ensuite l'application :
 
 ```shell

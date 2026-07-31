@@ -3,9 +3,9 @@ services:
     image: mysql:8.4
     environment:
       MYSQL_DATABASE: cinema
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${CINEMA_DB_USER}
+      MYSQL_PASSWORD: ${CINEMA_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${CINEMA_MYSQL_ROOT_PASSWORD}
     volumes:
       - cinema-data:/var/lib/mysql
     healthcheck:
@@ -24,8 +24,8 @@ services:
         condition: service_healthy
     environment:
       DB_URL: "jdbc:mysql://db:3306/cinema?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Paris"
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_USER: ${CINEMA_DB_USER}
+      DB_PASSWORD: ${CINEMA_DB_PASSWORD}
     stdin_open: true
     tty: true
 
