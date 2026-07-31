@@ -158,3 +158,13 @@ cinema/
 ## Documentation
 
 Les détails de la modélisation sont disponibles dans [`conception/conception.md`](conception/conception.md). Les analyses complémentaires du fichier JSON et du choix entre CSV et JSON se trouvent dans le dossier [`docs`](docs/).
+
+## Licence
+
+Le code source de ce projet est distribué sous [licence MIT](LICENSE).
+
+Cette licence ne s'applique pas au fichier
+[`films.json`](src/main/resources/films.json), ni aux données cinématographiques
+qu'il contient. Ce jeu de données est fourni uniquement comme ressource
+pédagogique et reste soumis aux droits de ses auteurs ou fournisseurs
+d'origine.
