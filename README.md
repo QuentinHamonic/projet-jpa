@@ -1,5 +1,7 @@
 # Projet Cinéma — Internet Movie Database
 
+[![Java CI](https://github.com/QuentinHamonic/projet-jpa/actions/workflows/ci.yml/badge.svg)](https://github.com/QuentinHamonic/projet-jpa/actions/workflows/ci.yml)
+
 Projet individuel Java réalisé dans le cadre de la formation Diginamic. L'objectif est de construire une petite application de gestion de données cinématographiques à partir d'un jeu de données inspiré d'IMDb.
 
 ## Objectifs
