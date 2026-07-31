@@ -37,7 +37,25 @@ Le projet est fonctionnel :
 
 ## Exécution
 
-Après avoir configuré la connexion MySQL dans `persistence.xml` :
+La connexion à MySQL est configurable par variables d'environnement :
+
+- `DB_URL` : URL JDBC ;
+- `DB_USER` : utilisateur MySQL ;
+- `DB_PASSWORD` : mot de passe MySQL ;
+- `HIBERNATE_DDL_AUTO` : `validate` par défaut ou `create` pour recréer les tables.
+
+Le fichier [`.env.example`](.env.example) fournit des valeurs fictives. Un fichier
+`.env` local peut en être dérivé, mais ne doit jamais être versionné. Pour une
+exécution directe sous PowerShell, définissez les variables dans le terminal :
+
+```powershell
+$env:DB_URL = "jdbc:mysql://localhost:3306/cinema?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Paris"
+$env:DB_USER = "root"
+$env:DB_PASSWORD = "votre-mot-de-passe-local"
+$env:HIBERNATE_DDL_AUTO = "validate"
+```
+
+L'application peut ensuite être lancée avec Maven :
 
 ```shell
 # Importer les données
@@ -46,6 +64,19 @@ mvn exec:java -Dexec.mainClass="fr.diginamic.App"
 # Lancer le menu de recherche
 mvn exec:java -Dexec.mainClass="fr.diginamic.SearchApp"
 ```
+
+La commande `mvn clean package` produit également un JAR autonome :
+
+```shell
+# Lancer le menu de recherche
+java -jar target/cinema-1.0-SNAPSHOT-all.jar
+
+# Lancer l'import
+java -cp target/cinema-1.0-SNAPSHOT-all.jar fr.diginamic.App
+```
+
+Le mode `create` supprime et recrée les tables au démarrage. Il doit uniquement
+être activé volontairement pour initialiser une base vide avant l'import.
 
 ## Organisation
 
