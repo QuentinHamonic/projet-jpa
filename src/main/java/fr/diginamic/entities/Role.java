@@ -6,6 +6,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,7 +20,10 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "role_film", uniqueConstraints = @UniqueConstraint(name = "uk_role_film_film_personne", columnNames = {
-        "film_id", "personne_id" }))
+        "film_id", "personne_id" }), indexes = {
+                @Index(name = "idx_role_film_personne", columnList = "personne_id"),
+                @Index(name = "idx_role_film_principal", columnList = "film_id, principal")
+        })
 @Getter
 @Setter
 @NoArgsConstructor

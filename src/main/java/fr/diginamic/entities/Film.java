@@ -8,6 +8,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
@@ -32,7 +33,12 @@ import java.util.Set;
  * Œuvre cinématographique ou télévisuelle identifiée par son identifiant IMDb.
  */
 @Entity
-@Table(name = "film")
+@Table(name = "film", indexes = {
+        @Index(name = "idx_film_annee_sortie", columnList = "annee_sortie"),
+        @Index(name = "idx_film_titre", columnList = "titre"),
+        @Index(name = "idx_film_pays", columnList = "pays_id"),
+        @Index(name = "idx_film_langue", columnList = "langue_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -81,12 +87,32 @@ public class Film {
     private List<Role> roles = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "film_realisateur", joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "id_imdb"), inverseJoinColumns = @JoinColumn(name = "personne_id", referencedColumnName = "id_imdb"))
+    @JoinTable(
+            name = "film_realisateur",
+            joinColumns = @JoinColumn(
+                    name = "film_id",
+                    referencedColumnName = "id_imdb"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "personne_id",
+                    referencedColumnName = "id_imdb"),
+            indexes = @Index(
+                    name = "idx_film_realisateur_personne",
+                    columnList = "personne_id"))
     @Setter(AccessLevel.NONE)
     private Set<Person> directors = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "film_genre", joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "id_imdb"), inverseJoinColumns = @JoinColumn(name = "genre_id", referencedColumnName = "id"))
+    @JoinTable(
+            name = "film_genre",
+            joinColumns = @JoinColumn(
+                    name = "film_id",
+                    referencedColumnName = "id_imdb"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "genre_id",
+                    referencedColumnName = "id"),
+            indexes = @Index(
+                    name = "idx_film_genre_genre",
+                    columnList = "genre_id"))
     @Setter(AccessLevel.NONE)
     private Set<Genre> genres = new HashSet<>();
 
